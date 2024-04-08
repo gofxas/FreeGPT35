@@ -273,46 +273,18 @@ app.use(enableCORS);
 
 // Route to handle POST requests for chat completions
 app.post("/v1/chat/completions", handleChatCompletion);
-
+app.get("/", (req, res) => {
+  res.send("API, RUNNING!");
+});
 // 404 handler for unmatched routes
 app.use((req, res) =>
   res.status(404).send({
     status: false,
     error: {
-      message: `The requested endpoint was not found. please make sure to use "http://localhost:3040/v1" as the base URL.`,
+      message: `The requested endpoint was not found. please make sure to use "http://localhost:3000/v1" as the base URL.`,
       type: "invalid_request_error",
     },
   })
 );
 
-// Start the server and the session ID refresh loop
-app.listen(port, () => {
-  console.log(`💡 Server is running at http://localhost:${port}`);
-  console.log();
-  console.log(`🔗 Base URL: http://localhost:${port}/v1`);
-  console.log(
-    `🔗 ChatCompletion Endpoint: http://localhost:${port}/v1/chat/completions`
-  );
-  console.log();
-  console.log("📝 Original TS Source By: Pawan.Krd");
-  console.log("📝 Modified Into JavaScript By: Adam");
-  console.log();
-
-  // setTimeout(async () => {
-  //   while (true) {
-  //     try {
-       
-  //       await wait(refreshInterval);
-  //     } catch (error) {
-  //       console.error("Error refreshing session ID, retrying in 1 minute...");
-  //       console.error(
-  //         "If this error persists, your country may not be supported yet."
-  //       );
-  //       console.error(
-  //         "If your country was the issue, please consider using a U.S. VPN."
-  //       );
-  //       await wait(errorWait);
-  //     }
-  //   }
-  // }, 0);
-});
+module.exports = app;
