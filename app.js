@@ -124,22 +124,7 @@ async function handleChatCompletion(req, res) {
     `${req.body?.messages?.length || 0} messages`,
     req.body.stream ? "(stream-enabled)" : "(stream-disabled)"
   );
-  const utoken = sha1(sha1(req?.body?.utoken || ""));
-
-  const checkedToken = sha1(sha1(unlockkey));
-  console.log(utoken, checkedToken);
-  if (utoken != checkedToken) {
-    res.write(
-      JSON.stringify({
-        status: false,
-        error: {
-          message: "未授权，无法访问.",
-          type: "未授权",
-        },
-      })
-    );
-    res.end();
-  }
+  await getNewSessionId();
   try {
     const body = {
       action: "next",
@@ -313,21 +298,21 @@ app.listen(port, () => {
   console.log("📝 Modified Into JavaScript By: Adam");
   console.log();
 
-  setTimeout(async () => {
-    while (true) {
-      try {
-        await getNewSessionId();
-        await wait(refreshInterval);
-      } catch (error) {
-        console.error("Error refreshing session ID, retrying in 1 minute...");
-        console.error(
-          "If this error persists, your country may not be supported yet."
-        );
-        console.error(
-          "If your country was the issue, please consider using a U.S. VPN."
-        );
-        await wait(errorWait);
-      }
-    }
-  }, 0);
+  // setTimeout(async () => {
+  //   while (true) {
+  //     try {
+       
+  //       await wait(refreshInterval);
+  //     } catch (error) {
+  //       console.error("Error refreshing session ID, retrying in 1 minute...");
+  //       console.error(
+  //         "If this error persists, your country may not be supported yet."
+  //       );
+  //       console.error(
+  //         "If your country was the issue, please consider using a U.S. VPN."
+  //       );
+  //       await wait(errorWait);
+  //     }
+  //   }
+  // }, 0);
 });
