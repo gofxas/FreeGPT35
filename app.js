@@ -3,18 +3,19 @@ const bodyParser = require("body-parser");
 const axios = require("axios");
 const https = require("https");
 const { randomUUID } = require("crypto");
-
+const sha1 = require("sha1");
 // Constants for the server and API configuration
-const port = 3040;
+const port = 3000;
 const baseUrl = "https://chat.openai.com";
 const apiUrl = `${baseUrl}/backend-api/conversation`;
 const refreshInterval = 60000; // Interval to refresh token in ms
 const errorWait = 120000; // Wait time in ms after an error
 
 // Initialize global variables to store the session token and device ID
+
 let token;
 let oaiDeviceId;
-
+let unlockkey = "free-gpt35";
 // Function to wait for a specified duration
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -123,6 +124,22 @@ async function handleChatCompletion(req, res) {
     `${req.body?.messages?.length || 0} messages`,
     req.body.stream ? "(stream-enabled)" : "(stream-disabled)"
   );
+  const utoken = sha1(sha1(req?.body?.utoken || ""));
+
+  const checkedToken = sha1(sha1(unlockkey));
+  console.log(utoken, checkedToken);
+  if (utoken != checkedToken) {
+    res.write(
+      JSON.stringify({
+        status: false,
+        error: {
+          message: "未授权，无法访问.",
+          type: "未授权",
+        },
+      })
+    );
+    res.end();
+  }
   try {
     const body = {
       action: "next",
@@ -162,12 +179,13 @@ async function handleChatCompletion(req, res) {
 
     for await (const message of StreamCompletion(response.data)) {
       // Skip heartbeat detection
-			if (message.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}$/)) continue;
-			
+      if (message.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}$/))
+        continue;
+
       const parsed = JSON.parse(message);
 
       let content = parsed?.message?.content?.parts[0] || "";
-
+      let conversation_id = parsed?.conversation_id;
       for (let message of req.body.messages) {
         if (message.content === content) {
           content = "";
